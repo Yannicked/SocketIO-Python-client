@@ -196,5 +196,5 @@ class socketio(object): #the socketio class, the main framework of this library
     def sendJson(self, m={'Hello':'World'}):
         self.ws.send(self.encode('json', m))
     #wrapper for sending events, 
-    def sendEvent(self, m={'name' = 'Hello', 'args' = 'World'})
+    def sendEvent(self, m={'name' : 'Hello', 'args' : 'World'})
         self.ws.send(self.encode('event', m))
