@@ -1,0 +1,9 @@
+Usage:
+import socketio
+
+sio = socketio.socketio(server ip, server port) # define the server
+
+sio.connect() # connect
+sio.receiveMsg(timeout) # receive timeout is not tested
+sio.sendMsg(string) # send
+sio.disconnect() to disconnect
