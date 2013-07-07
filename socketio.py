@@ -130,6 +130,18 @@ class socketio(object): #the socketio class, the main framework of this library
         #return a json packet
         return json.loads(decode(self.data))
 
+    #same as receiveJson, but for Event packages
+    def receiveEvent(self, timeout = 0):
+        self.datanew = False
+        time = 0
+        while not self.datanew or not self.data[0] == '5':
+            sleep(0.5)
+            time += 0.5
+            if not timeout == 0 and time == timeout:
+                return
+        #return a json packet
+        return json.loads(decode(self.data))['args']                
+    
     #remove the header from a package
     def decode(self, m):
         return m[4:]
@@ -153,7 +165,6 @@ class socketio(object): #the socketio class, the main framework of this library
         #Optional, check if server approved connection/respond (experimental)
         sleep(0.75)
         if self.data[0] == '1':
-            self.datanew = False
             return
         else:
             self.disconnect()
@@ -173,12 +184,17 @@ class socketio(object): #the socketio class, the main framework of this library
         elif sort == 'heartbeat':
             return '2:::'
         elif sort == 'message':
-            return '3:::%s' % str(message)
+            return '3:::%s' % message
         elif sort == 'json':
-            return '4:::%s' % str(message)
+            return '4:::%s' % json.dumps(message)
+        elif sort == 'event':
+            return '5:::%s' % json.dumps(message)
     #simple wrapper for sending a string
     def sendMsg(self, m='Hello, World'):
         self.ws.send(self.encode('message', m))
     #simple wrapper for sending json encoded strings (experimental)
-    def sendJson(self, m='Hello, World'):
-        self.ws.send(self.encode('json', json.dumps(m)))
+    def sendJson(self, m={'Hello':'World'}):
+        self.ws.send(self.encode('json', m))
+    #wrapper for sending events, 
+    def sendEvent(self, m={'name' = 'Hello', 'args' = 'World'})
+        self.ws.send(self.encode('event', m))
