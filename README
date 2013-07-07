@@ -7,3 +7,12 @@ sio.connect() # connect
 sio.receiveMsg(timeout) # receive (timeout is not tested)
 sio.sendMsg(string) # send
 sio.disconnect() # disconnect
+
+
+Confirmed working:
+connecting
+sending heartbeat every (gets this value from the server) seconds
+sending a string
+sending a event
+receiving a string
+disconnecting
