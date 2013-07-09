@@ -61,7 +61,14 @@ class SocketIOError(Exception): #Just my own error
 
 class socketio(object): #the socketio class, the main framework of this library
 
-    def __init__(self, host, port, debug = False):
+    def __init__(self, host, port, **kwargs):
+        debug = False
+        secure = False
+        for key in kwargs:
+            if key == 'debug':
+                debug = kwargs[key]
+            if key == 'secure':
+                secure = kwargs[key]
         #checking if the port number and the ip is vailid
         if not isinstance( port, ( int, long, basestring ) ):
             raise SocketIOError('%s is not a vailid port' % str(port))
@@ -81,6 +88,7 @@ class socketio(object): #the socketio class, the main framework of this library
         self.heartbeatTimeout = 20
         self.datanew = False
         self.debug = debug
+        self.secure = secure
 
     #The heartbeat process, if you connect to a socket.io server, it returns a heartbeat timeout. If you don't respond to a heartbeat in time, i don't know what happens.
     def heartbeat(self):
@@ -157,7 +165,10 @@ class socketio(object): #the socketio class, the main framework of this library
             self.heartbeatTimeout = 1
         else:
             self.heartbeatTimeout -= 5
-        socketIOUrl = 'ws://%s:%i/socket.io/1/websocket/%s' % (self.host, self.port, hskey)
+        protocol = 'ws'
+        if self.secure:
+            protocol = 'wss'
+        socketIOUrl = '%s://%s:%i/socket.io/1/websocket/%s' % (protocol, self.host, self.port, hskey)
         self.ws = websocket.create_connection(socketIOUrl)
         threading.Thread(target=self.receiver).start()
         if self.heartbeatTimeout:
