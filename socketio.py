@@ -26,7 +26,6 @@
 
 #Protocol: https://github.com/LearnBoost/socket.io-spec
 
-#Todo: Json and event parsing (Json is implemented but not tested)
 
 '''
 Usage:
@@ -152,7 +151,10 @@ class socketio(object): #the socketio class, the main framework of this library
     
     #remove the header from a package
     def decode(self, m):
-        return m[4:]
+        m = m.split(':').pop(0).pop(0).pop(0)
+        return ''.join(i for i in m)
+        
+        
     
     def connect(self):
         #before connecting to the server we need to get a client id
