@@ -1,18 +1,15 @@
-Usage:
-import socketio
+This is a socket.IO client written in python, it can be used to send commands and data to a socket.IO server.
 
-sio = socketio.socketio(server ip, server port) # define the server
+socket.IO protocol: https://github.com/LearnBoost/socket.io-spec
 
-sio.connect() # connect
-sio.receiveMsg(timeout) # receive (timeout is not tested)
-sio.sendMsg(string) # send
-sio.disconnect() # disconnect
+Example to use it:
+sio = socketio.socketio('127.0.0.1' 1234) #You also can use debug = True and secure = True
+sio.connect() #Handshaking the server and connecting to it + starting the extra threads
+sio.sendEvent({'name': 'Test', 'args' : 'Hello world'}) #sending an event
+event = sio.receiveEvent() # returns a dictonary with a name and a args key
+sio.heartbeat() #Dont use this, it automatically sends heartbeats to the server with a timeout given by the server
+sio.disconnect() #Disconnecting from the server and stopping the server threads !!If you don't disconnect your programm will not stop running...
 
-
-Confirmed working:
-connecting
-sending heartbeat every (gets this value from the server) seconds
-sending a string
-sending a event
-receiving a string
-disconnecting
+TODO:
+Better disconnecting, probably just atexit.register(disconnect)
+...
