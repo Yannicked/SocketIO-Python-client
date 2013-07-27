@@ -158,6 +158,7 @@ class socketio(object): #the socketio class, the main framework of this library
     
     def connect(self):
         #before connecting to the server we need to get a client id
+        self.stop = False
         conn = httplib.HTTPConnection(self.host, self.port)
         conn.request('POST','/socket.io/1/')
         resp = conn.getresponse().read()
