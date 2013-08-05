@@ -3,7 +3,7 @@ This is a socket.IO client written in python, it can be used to send commands an
 socket.IO protocol: https://github.com/LearnBoost/socket.io-spec
 
 Example to use it:
-sio = socketio.socketio('127.0.0.1' 1234) #You also can use debug = True and secure = True
+sio = socketio.socketio('127.0.0.1', 1234) #You also can use debug = True and secure = True
 sio.connect() #Handshaking the server and connecting to it + starting the extra threads
 sio.sendEvent({'name': 'Test', 'args' : 'Hello world'}) #sending an event
 event = sio.receiveEvent() # returns a dictonary with a name and a args key
