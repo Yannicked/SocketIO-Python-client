@@ -12,4 +12,5 @@ sio.disconnect() #Disconnecting from the server and stopping the server threads 
 
 TODO:
 Better disconnecting, probably just atexit.register(disconnect)
+Event system, so you can do sio.on('message', messageHandler())
 ...
