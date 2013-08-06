@@ -39,10 +39,8 @@ sio.sendMsg(string) # send
 sio.disconnect() to disconnect
 '''
 
-import httplib, thread, threading, json
+import httplib, thread, threading, json, atexit, socket
 from time import sleep
-from datetime import datetime, timedelta
-import signal
 
 try:
     import websocket
@@ -72,16 +70,21 @@ class socketio(object): #the socketio class, the main framework of this library
         if not isinstance( port, ( int, long, basestring ) ):
             raise SocketIOError('%s is not a vailid port' % str(port))
         if not isinstance(host, basestring):
-            raise SocketIOError('%s is not a vailid ip' % str(host))
+            raise SocketIOError('%s is not a vailid address' % str(host))
         #checking if there are only numbers in the ip
         try:
             int(''.join(host.split('.')))
         except:
-            raise SocketIOError('%s is not a vailid ip' % str(host))
+            try:
+                #if the user entered a hostname like wwww.google.com it will resolve the ip
+                host = socket.gethostbyname(host)
+            except:
+                raise SocketIOError('%s is not a vailid address' % str(host))
         #defining all the variables
         self.host = host
         self.port = port
         self.stop = False
+        self.connected = False
         self.ws = None
         self.data = ''
         self.heartbeatTimeout = 20
@@ -89,7 +92,7 @@ class socketio(object): #the socketio class, the main framework of this library
         self.debug = debug
         self.secure = secure
 
-    #The heartbeat process, if you connect to a socket.io server, it returns a heartbeat timeout. If you don't respond to a heartbeat in time, i don't know what happens.
+    #The heartbeat process, if you connect to a socket.io server, it returns a heartbeat timeout. If you don't send a heartbeat the server will terminate the connection between you and the server
     def heartbeat(self):
         time = 0
         while not self.stop:
@@ -107,6 +110,8 @@ class socketio(object): #the socketio class, the main framework of this library
         while not self.stop:
             self.data = self.ws.recv()
             self.datanew = True
+            if self.data[0] == '1':
+                self.connected = True
             if self.debug:
                 print('Received packet from server which contains: %s' % str(self.data))
 
@@ -176,20 +181,23 @@ class socketio(object): #the socketio class, the main framework of this library
         threading.Thread(target=self.receiver).start()
         if self.heartbeatTimeout:
             threading.Thread(target=self.heartbeat).start()
-        #Optional, check if server approved connection/respond (experimental)
+        #Optional, check if server approved connection/respond
         sleep(0.75)
-        if self.data[0] == '1':
+        if self.connected:
+            atexit.register(self.disconnect)
             return
         else:
             self.disconnect()
-            raise SocketIOError('Server didn\'t return 1::')
+            raise SocketIOError('Server didn\'t respond')
 
     #Disconnect, just to be complete
     def disconnect(self):
-        #set the stop variable to true so the other processes stop asap
+        #set the stop variable to true so the other Threads stop asap
         self.stop = True
+        self.connected = True
         #send a disconnect message to the server
-        self.ws.send(self.encode('disconnect'))
+        if self.ws:
+            self.ws.send(self.encode('disconnect'))
 
     #Easy to understand, example: if you send 0::: the server will know you want to disconnect
     def encode(self, sort, message = 'Hello, World'):
