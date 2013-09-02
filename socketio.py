@@ -130,6 +130,34 @@ class socketio(object): #the socketio class, the main framework of this library
                 return
         self.datanew = False
         return self.decode(self.data)
+
+    #Thread for receiving events and calling the callback
+    def eventHandler(self, event, callback):
+        while not self.stop:
+            self.datanew = False
+            listenFor = '5'
+            if event == 'message':
+                listenFor = '3'
+            while True:
+                sleep(0.5)
+                if self.datanew and self.data[0] == listenFor:
+                    if listenFor == '5':
+                        #check if the event we received was the event we were looking for.
+                        if json.loads(self.decode(self.data))['name'] == event:
+                            break
+                    else:
+                        break
+            #run the callback as a thread, so we can go on receiving
+            if listenFor == '5':
+                threading.Thread(target=callback, args=json.loads(self.decode(self.data))['args']).start()
+            else:
+                threading.Thread(target=callback, args=self.decode(self.data)).start()
+
+    #simple starter for the eventHandler thread
+    def on(self, event, callback):
+        threading.Thread(target=self.eventHandler, args=(event, callback)).start()
+        return True
+    
     #same as the receiveMsg but for Json packages
     def receiveJson(self, timeout = 0):
         self.datanew = False
@@ -140,7 +168,7 @@ class socketio(object): #the socketio class, the main framework of this library
             if not timeout == 0 and time == timeout:
                 return
         #return a json packet
-        return json.loads(decode(self.data))
+        return json.loads(self.decode(self.data))
 
     #same as receiveJson, but for Event packages
     def receiveEvent(self, timeout = 0):
@@ -152,12 +180,17 @@ class socketio(object): #the socketio class, the main framework of this library
             if not timeout == 0 and time == timeout:
                 return
         #return a json packet
-        return json.loads(decode(self.data))['args']                
+        return json.loads(self.ecode(self.data))['args']                
     
     #remove the header from a package
     def decode(self, m):
-        m = m.split(':').pop(0).pop(0).pop(0)
-        return ''.join(i for i in m)
+        m = str(m)
+        m = m.split(':', 3)
+        m.pop(0)
+        m.pop(0)
+        m.pop(0)
+        m = ''.join(i for i in m)
+        return m
         
         
     
@@ -184,7 +217,7 @@ class socketio(object): #the socketio class, the main framework of this library
         #Optional, check if server approved connection/respond
         sleep(0.75)
         if self.connected:
-            atexit.register(self.disconnect)
+            atexit.register(self.disconnect) #Doesn't work?
             return
         else:
             self.disconnect()

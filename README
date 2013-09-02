@@ -5,12 +5,12 @@ socket.IO protocol: https://github.com/LearnBoost/socket.io-spec
 Example to use it:
 sio = socketio.socketio('127.0.0.1', 1234) #You also can use debug = True and secure = True
 sio.connect() #Handshaking the server and connecting to it + starting the extra threads
+sio.on('Test', callback) #if a Test event was received it will run the callback with the message as argument
 sio.sendEvent({'name': 'Test', 'args' : 'Hello world'}) #sending an event
-event = sio.receiveEvent() # returns a dictonary with a name and a args key
+
 sio.heartbeat() #Dont use this, it automatically sends heartbeats to the server with a timeout given by the server
 sio.disconnect() #Disconnecting from the server and stopping the server threads !!If you don't disconnect your programm will not stop running...
 
 TODO:
 Better disconnecting, probably just atexit.register(disconnect)
-Event system, so you can do sio.on('message', messageHandler())
 ...
